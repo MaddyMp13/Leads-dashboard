@@ -12,7 +12,7 @@ function Header() {
     return (
         <header className="h-14 bg-white border-b flex items-center justify-between px-6 py-4">
             <h1 className="font-semibold text-gray-700">
-                Welcome to Arkentech Dashboard 👋
+                Welcome to Arkentech Dashboard
             </h1>
 
             <button style={{ backgroundColor: "#97144d" }}

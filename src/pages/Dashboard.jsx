@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getLeads, getUsers } from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
     const [leads, setLeads] = useState([]);
@@ -10,6 +10,8 @@ const Dashboard = () => {
     const [search, setSearch] = useState("");
 
     const navigate = useNavigate();
+    const location = useLocation();
+    const selectedDomain = new URLSearchParams(location.search).get("domain") || "";
     const itemsPerPage = 5;
 
     // ✅ Fetch Data
@@ -34,12 +36,21 @@ const Dashboard = () => {
     }, []);
 
     // ✅ Dashboard Stats
-    const totalLeads = leads.length;
+    const domainFilteredLeads = selectedDomain
+        ? leads.filter(
+            (lead) =>
+                lead.domain_name?.trim().toLowerCase() === selectedDomain.trim().toLowerCase()
+        )
+        : leads;
+
+    const totalLeads = domainFilteredLeads.length;
     // const totalUsers = new Set(users.map(u => u.email)).size;
-    const uniqueDomains = new Set(leads.map(l => l.domain_name)).size;
+    const uniqueDomains = new Set(
+        domainFilteredLeads.map(l => l.domain_name?.trim()).filter(Boolean)
+    ).size;
 
     // ✅ Unique POC Names
-    const uniquePOCNames = [...new Set(leads.map(l => l.poc_name?.trim()).filter(Boolean))];
+    const uniquePOCNames = [...new Set(domainFilteredLeads.map(l => l.poc_name?.trim()).filter(Boolean))];
     const totalPOC = uniquePOCNames.length;
 
     // ✅ Search Filter (Case insensitive)
@@ -80,7 +91,7 @@ const Dashboard = () => {
     // ✅ Reset page when searching
     useEffect(() => {
         setCurrentPage(1);
-    }, [search]);
+    }, [search, selectedDomain]);
 
     if (loading) return <p>Loading dashboard...</p>;
 
@@ -107,7 +118,9 @@ const Dashboard = () => {
             </div>
 
             {/* 📋 POC Table */}
-            <h3 className="text-xl font-semibold mb-4">All POC Names</h3>
+            <h3 className="text-xl font-semibold mb-4">
+                {selectedDomain ? `POC Names for ${selectedDomain}` : "All POC Names"}
+            </h3>
 
             {/* 🔎 Search Box */}
             <div className="mb-4">
@@ -134,7 +147,16 @@ const Dashboard = () => {
                             <tr key={index} className="hover:bg-gray-50">
                                 <td className="px-4 py-2 border">
                                     <p
-                                        onClick={() => navigate(`/leads?poc=${encodeURIComponent(name)}`)}
+                                        onClick={() => {
+                                            const params = new URLSearchParams();
+                                            params.set("poc", name);
+
+                                            if (selectedDomain) {
+                                                params.set("domain", selectedDomain);
+                                            }
+
+                                            navigate(`/leads?${params.toString()}`);
+                                        }}
                                         className="cursor-pointer hover:bg-gray-200 p-2 rounded"
                                     >
                                         {name}
@@ -196,5 +218,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
 

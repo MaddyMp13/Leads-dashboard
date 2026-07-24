@@ -39,7 +39,7 @@ const Trash = () => {
 
         try {
             const res = await fetch(
-                "http://leadsdashboard.arkentechpublishing.com/api/leads/permanent_delete_lead.php",
+                "http://localhost/api/leads/permanent_delete_lead.php",
                 {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" },

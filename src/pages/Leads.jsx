@@ -3,13 +3,16 @@ import { useEffect, useState } from "react";
 import { getLeads } from "../services/api";
 import { deleteLead } from "../services/api";
 import { restoreLead } from "../services/api";
+import { updateLead } from "../services/api";
 import { isAdmin } from "../utils/auth";
 
 
 
 const Leads = () => {
     const location = useLocation();
-    const selectedPOC = new URLSearchParams(location.search).get("poc");
+    const queryParams = new URLSearchParams(location.search);
+    const selectedPOC = queryParams.get("poc");
+    const selectedDomain = queryParams.get("domain");
 
     const [leads, setLeads] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -20,9 +23,6 @@ const Leads = () => {
     const [editLead, setEditLead] = useState(null);
     const ADMIN = isAdmin();
     const leadsPerPage = 10;
-
-    const queryParams = new URLSearchParams(location.search);
-
 
     // 🔹 Fetch leads
     useEffect(() => {
@@ -52,6 +52,14 @@ const Leads = () => {
                 selectedPOC &&
                 lead.poc_name?.trim().toLowerCase() !==
                 selectedPOC.trim().toLowerCase()
+            ) {
+                return false;
+            }
+
+            if (
+                selectedDomain &&
+                lead.domain_name?.trim().toLowerCase() !==
+                selectedDomain.trim().toLowerCase()
             ) {
                 return false;
             }
@@ -96,6 +104,96 @@ const Leads = () => {
     );
 
     // 🔹 Smart pagination numbers
+    const exportColumns = [
+        ["campaign_id", "Campaign ID"],
+        ["poc_name", "POC Name"],
+        ["domain_name", "Domain Name"],
+        ["poc_link", "POC Link"],
+        ["asset_link", "Asset Link"],
+        ["first_name", "First Name"],
+        ["last_name", "Last Name"],
+        ["email", "Email"],
+        ["phone", "Phone"],
+        ["job_title", "Job Title"],
+        ["job_function", "Job Function"],
+        ["job_level", "Job Level"],
+        ["company_name", "Company Name"],
+        ["company_type", "Company Type"],
+        ["industry", "Industry"],
+        ["company_size", "Company Size"],
+        ["company_revenue", "Company Revenue"],
+        ["state", "State"],
+        ["country", "Country"],
+        ["user_timezone", "User Time Zone"],
+        ["created_at", "Created At"],
+        ["optin_1", "Opt-In 1"],
+        ["optin_2", "Opt-In 2"],
+        ["question_1", "Question 1"],
+        ["question_2", "Question 2"],
+        ["question_3", "Question 3"],
+        ["question_4", "Question 4"],
+        ["question_5", "Question 5"],
+        ["question_6", "Question 6"],
+        ["question_7", "Question 7"],
+        ["question_8", "Question 8"],
+        ["question_9", "Question 9"],
+        ["question_10", "Question 10"],
+        ["mul_select_1", "Multi Select 1"],
+        ["mul_select_2", "Multi Select 2"],
+        ["mul_select_3", "Multi Select 3"],
+        ["mul_select_4", "Multi Select 4"],
+        ["mul_select_5", "Multi Select 5"],
+    ];
+
+    const formatExportValue = (value) => {
+        if (value === null || value === undefined) return "";
+
+        return String(value).replace(/"/g, '""');
+    };
+
+    const getExportFileName = () => {
+        const parts = ["leads"];
+
+        if (selectedDomain) parts.push(selectedDomain);
+        if (selectedPOC) parts.push(selectedPOC);
+        if (search.trim()) parts.push(search.trim());
+
+        const safeName = parts
+            .join("-")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "");
+
+        return `${safeName || "leads"}.csv`;
+    };
+
+    const handleDownloadExcel = () => {
+        if (filteredLeads.length === 0) {
+            alert("No filtered leads available to download");
+            return;
+        }
+
+        const headerRow = exportColumns.map(([, label]) => `"${label}"`).join(",");
+        const dataRows = filteredLeads.map((lead) =>
+            exportColumns
+                .map(([key]) => `"${formatExportValue(lead[key])}"`)
+                .join(",")
+        );
+        const csvContent = [headerRow, ...dataRows].join("\r\n");
+        const blob = new Blob([`\uFEFF${csvContent}`], {
+            type: "text/csv;charset=utf-8;",
+        });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = getExportFileName();
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     const getPagination = () => {
         const pages = [];
 
@@ -154,6 +252,11 @@ const Leads = () => {
 
     //Save edited lead
     const handleSaveEdit = async () => {
+        if (!editLead?.id) {
+            alert("Lead id is missing. Please refresh and try again.");
+            return;
+        }
+
         // Check for empty fields
         // for (let key in editLead) {
         //     if (editLead[key] === null || editLead[key] === "") {
@@ -163,27 +266,18 @@ const Leads = () => {
         // }
 
         try {
-            const res = await fetch("http://leadsdashboard.arkentechpublishing.com/api/leads/update_lead.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(editLead),
-            });
-
-            const data = await res.json();
+            const data = await updateLead(editLead);
 
             if (data.success) {
-                setLeads((prev) =>
-                    prev.map((l) =>
-                        l.id === editLead.id ? editLead : l
-                    )
-                );
+                const refreshedLeads = await getLeads();
+                setLeads(refreshedLeads);
                 setEditLead(null);
             } else {
-                alert("Update failed");
+                alert(data.message || "Update failed");
             }
         } catch (err) {
             console.error(err);
-            alert("Server error");
+            alert(err.message || "Server error");
         }
     };
 
@@ -201,7 +295,9 @@ const Leads = () => {
     if (filteredLeads.length === 0) {
         return (
             <div className="bg-white p-6 rounded shadow">
-                <h2 className="text-xl font-semibold mb-4">Leads</h2>
+                <h2 className="text-xl font-semibold mb-4">
+                    {selectedDomain ? `Leads - ${selectedDomain}` : "Leads"}
+                </h2>
 
                 <input type="text" placeholder="Search by name or email..."
                     value={search} onChange={(e) => setSearch(e.target.value)}
@@ -219,7 +315,9 @@ const Leads = () => {
 
 
         <div className="bg-white p-6 rounded shadow ">
-            <h2 className="text-xl font-semibold mb-4">Leads</h2>
+            <h2 className="text-xl font-semibold mb-4">
+                {selectedDomain ? `Leads - ${selectedDomain}` : "Leads"}
+            </h2>
 
             {/* 🔍 Search */}
             <div className="mb-4 ">
@@ -249,6 +347,7 @@ const Leads = () => {
                             <th className="px-4 py-2 border text-left">Job Level</th>
                             <th className="px-4 py-2 border text-left">Company Name</th>
                             <th className="px-4 py-2 border text-left">Company Type</th>
+                            <th className="px-4 py-2 border text-left">industry</th>
                             <th className="px-4 py-2 border text-left">Company Size</th>
                             <th className="px-4 py-2 border text-left">Company Revenue</th>
                             <th className="px-4 py-2 border text-left">State</th>
@@ -285,7 +384,7 @@ const Leads = () => {
                                     {(currentPage - 1) * leadsPerPage + index + 1}
                                 </td>
                                 {/* <td className="px-4 py-2 border">{lead.id}</td> */}
-                                <td className="px-4 py-2 border">{lead.campaign_id}</td>
+                                <td className="px-4 py-2 border w-100">{lead.campaign_id}</td>
                                 <td className="px-4 py-2 border">{lead.poc_name}</td>
                                 <td className="px-4 py-2 border">{lead.domain_name}</td>
                                 <td className="px-4 py-2 border">{lead.poc_link}</td>
@@ -299,20 +398,23 @@ const Leads = () => {
                                 <td className="px-4 py-2 border">{lead.job_level}</td>
                                 <td className="px-4 py-2 border">{lead.company_name}</td>
                                 <td className="px-4 py-2 border">{lead.company_type}</td>
+                                <td className="px-4 py-2 border">{lead.industry}</td>
                                 <td className="px-4 py-2 border">{lead.company_size}</td>
                                 <td className="px-4 py-2 border">{lead.company_revenue}</td>
                                 <td className="px-4 py-2 border">{lead.state}</td>
                                 <td className="px-4 py-2 border">{lead.country}</td>
-                                {
-                                    new Date(lead.user_timezone).toLocaleString('en-IN', {
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        second: '2-digit',
-                                    })
-                                }
+                                <td className="px-4 py-2 border">
+                                    {
+                                        new Date(lead.user_timezone).toLocaleString('en-IN', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            second: '2-digit',
+                                        })
+                                    }
+                                </td>
                                 <td className="px-4 py-2 border">{
                                     new Date(lead.created_at).toLocaleString('en-IN', {
                                         timeZone: "Asia/Kolkata",
@@ -342,20 +444,22 @@ const Leads = () => {
                                 <td className="px-4 py-2 border">{lead.mul_select_4}</td>
                                 <td className="px-4 py-2 border">{lead.mul_select_5}</td>
                                 {ADMIN && (
-                                    <td className="px-4 border py-8 flex items-center gap-3">
-                                        <button
-                                            onClick={() => setEditLead(lead)}
-                                            className="text-blue-600 hover:underline"
-                                        >
-                                            Edit
-                                        </button>
+                                    <td className="px-4 py-5 border">
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={() => setEditLead({ ...lead })}
+                                                className="text-blue-600 hover:underline"
+                                            >
+                                                Edit
+                                            </button>
 
-                                        <button
-                                            onClick={() => handleDelete(lead)}
-                                            className="text-red-600 hover:underline"
-                                        >
-                                            Delete
-                                        </button>
+                                            <button
+                                                onClick={() => handleDelete(lead)}
+                                                className="text-red-600 hover:underline"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
                                     </td>
                                 )}
                             </tr>
@@ -421,7 +525,7 @@ const Leads = () => {
 
                         <input autoFocus
                             type="text"
-                            value={editLead.campaign_id}
+                            value={editLead.campaign_id || ""}
                             onChange={(e) =>
                                 setEditLead({ ...editLead, campaign_id: e.target.value })
                             }
@@ -431,7 +535,7 @@ const Leads = () => {
 
                         <input
                             type="text"
-                            value={editLead.poc_name}
+                            value={editLead.poc_name || ""}
                             onChange={(e) =>
                                 setEditLead({ ...editLead, poc_name: e.target.value })
                             }
@@ -441,7 +545,7 @@ const Leads = () => {
 
                         <input
                             type="text"
-                            value={editLead.domain_name}
+                            value={editLead.domain_name || ""}
                             onChange={(e) =>
                                 setEditLead({ ...editLead, domain_name: e.target.value })
                             }
@@ -451,7 +555,7 @@ const Leads = () => {
 
                         <input
                             type="text"
-                            value={editLead.poc_link}
+                            value={editLead.poc_link || ""}
                             onChange={(e) =>
                                 setEditLead({ ...editLead, poc_link: e.target.value })
                             }
@@ -461,7 +565,7 @@ const Leads = () => {
 
                         <input
                             type="text"
-                            value={editLead.asset_link}
+                            value={editLead.asset_link || ""}
                             onChange={(e) =>
                                 setEditLead({ ...editLead, asset_link: e.target.value })
                             }
@@ -471,7 +575,7 @@ const Leads = () => {
 
                         <input
                             type="text"
-                            value={editLead.first_name}
+                            value={editLead.first_name || ""}
                             onChange={(e) =>
                                 setEditLead({ ...editLead, first_name: e.target.value })
                             }
@@ -481,7 +585,7 @@ const Leads = () => {
 
                         <input
                             type="text"
-                            value={editLead.last_name}
+                            value={editLead.last_name || ""}
                             onChange={(e) =>
                                 setEditLead({ ...editLead, last_name: e.target.value })
                             }
@@ -491,7 +595,7 @@ const Leads = () => {
 
                         <input
                             type="email"
-                            value={editLead.email}
+                            value={editLead.email || ""}
                             onChange={(e) =>
                                 setEditLead({ ...editLead, email: e.target.value })
                             }
@@ -501,7 +605,7 @@ const Leads = () => {
 
                         <input
                             type="text"
-                            value={editLead.phone}
+                            value={editLead.phone || ""}
                             onChange={(e) =>
                                 setEditLead({ ...editLead, phone: e.target.value })
                             }
@@ -532,12 +636,7 @@ const Leads = () => {
 
                 {ADMIN && (
                     <button
-                        onClick={() =>
-                            window.open(
-                                "https://leadsdashboard.arkentechpublishing.com/api/leads/export_leads.php",
-                                "_blank"
-                            )
-                        }
+                        onClick={handleDownloadExcel}
                         className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                     >
                         Download Excel
@@ -551,5 +650,3 @@ const Leads = () => {
 
 
 export default Leads;
-
-

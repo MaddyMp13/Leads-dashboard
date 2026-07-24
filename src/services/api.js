@@ -1,4 +1,36 @@
-const API_BASE = "http://leadsdashboard.arkentechpublishing.com/api";
+const isLocalHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+const API_BASE = isLocalHost
+    ? "http://localhost/api"
+    : "https://leadsdashboard.arkentechpublishing.com/api";
+
+const parseJsonResponse = async (response, fallbackMessage) => {
+    const text = await response.text();
+    let data = {};
+
+    try {
+        data = text ? JSON.parse(text) : {};
+    } catch {
+        throw new Error(text || fallbackMessage);
+    }
+
+    if (!response.ok) {
+        throw new Error(data.message || fallbackMessage);
+    }
+
+    return data;
+};
+
+/* Login */
+export const loginUser = async (email, password) => {
+    const response = await fetch(`${API_BASE}/auth/login.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+    });
+
+    return parseJsonResponse(response, "Login failed");
+};
+
 
 /* 🔹 Get all leads */
 export const getLeads = async () => {
@@ -22,11 +54,7 @@ export const updateLead = async (lead) => {
         body: JSON.stringify(lead),
     });
 
-    if (!response.ok) {
-        throw new Error("Failed to update lead");
-    }
-
-    return response.json();
+    return parseJsonResponse(response, "Failed to update lead");
 };
 
 
@@ -99,7 +127,7 @@ const permanentDelete = async () => {
     }
 };
 
-const API_user = "http://leadsdashboard.arkentechpublishing.com/api/users";
+const API_user = `${API_BASE}/users`;
 /* 🔹 Get All Users */
 export const getUsers = async () => {
     const response = await fetch(`${API_user}/users.php`);

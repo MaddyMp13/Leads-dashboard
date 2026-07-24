@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../services/api";
 
 
 const Login = () => {
@@ -13,16 +14,10 @@ const Login = () => {
         setError("");
 
         try {
-            const res = await fetch("http://leadsdashboard.arkentechpublishing.com/api/auth/login.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await res.json();
+            const data = await loginUser(email, password);
 
             if (!data.success) {
-                setError(data.message);
+                setError(data.message || "Login failed");
                 return;
             }
 
@@ -33,12 +28,13 @@ const Login = () => {
             navigate("/dashboard");
 
         } catch (err) {
-            setError("Login failed");
+            setError(err.message || "Login failed");
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100" style={{ backgroundImage: "url('http://leadsdashboard.arkentechpublishing.com/Arken-Wallpaper.png')", backgroundRepeat: "no-repeat", backgroundPosition: "center", backgroundSize: "cover" }}>
+        <div className="min-h-screen flex items-center justify-center bg-gray-100" style={{ backgroundImage: "url('https://leadsdashboard.arkentechpublishing.com/Arken-Wallpaper.png')", backgroundRepeat: "no-repeat", backgroundPosition: "center", backgroundSize: "cover" }}>
+
             <form
                 onSubmit={handleLogin}
                 className=" p-6 rounded shadow w-64"
