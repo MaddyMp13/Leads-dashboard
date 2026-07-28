@@ -6,11 +6,17 @@ import { getLeads } from "../services/api";
 
 const Sidebar = () => {
     const [leads, setLeads] = useState([]);
+<<<<<<< HEAD
     const [selectedDomain, setSelectedDomain] = useState(
         localStorage.getItem("selectedDomain") || ""
     );
     const location = useLocation();
     const navigate = useNavigate();
+=======
+    const location = useLocation();
+    const navigate = useNavigate();
+    const selectedDomain = new URLSearchParams(location.search).get("domain") || "";
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
 
     useEffect(() => {
         const fetchDomains = async () => {
@@ -41,6 +47,7 @@ const Sidebar = () => {
         const params = new URLSearchParams(location.search);
         const domain = event.target.value;
 
+<<<<<<< HEAD
         setSelectedDomain(domain);
         window.dispatchEvent(
             new CustomEvent("selected-domain-change", { detail: domain })
@@ -51,16 +58,24 @@ const Sidebar = () => {
             params.set("domain", domain);
         } else {
             localStorage.removeItem("selectedDomain");
+=======
+        if (domain) {
+            params.set("domain", domain);
+        } else {
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
             params.delete("domain");
         }
 
         params.delete("poc");
 
+<<<<<<< HEAD
         if (location.pathname === "/dashboard") {
             navigate({ pathname: location.pathname, search: "" });
             return;
         }
 
+=======
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
         navigate({
             pathname: location.pathname,
             search: params.toString()
@@ -68,7 +83,10 @@ const Sidebar = () => {
     };
 
     const getFilteredPath = (pathname) => {
+<<<<<<< HEAD
         if (pathname === "/dashboard") return pathname;
+=======
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
         if (!selectedDomain) return pathname;
 
         const params = new URLSearchParams();
@@ -80,7 +98,11 @@ const Sidebar = () => {
     return (
         <aside className="bg-gray-900 text-white p-4 ">
 
+<<<<<<< HEAD
             <img src="https://arkentechsolutions.com/wp-content/uploads/2026/02/Arken-Logo.webp" alt='Arken-Logo' width={"150px"} className="mb-5 " />
+=======
+            <img src="https://arkentechpublishing.com/wp-content/uploads/2023/05/Header-logo.png.webp" alt='Arken-Logo' width={"150px"} />
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
 
             <h2 className="text-xl font-bold mb-6">Control Panel</h2>
 

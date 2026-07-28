@@ -39,7 +39,11 @@ const Trash = () => {
 
         try {
             const res = await fetch(
+<<<<<<< HEAD
                 "https://mandar.xo.je/leads/permanent_delete_lead.php",
+=======
+                "http://localhost/api/leads/permanent_delete_lead.php",
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
                 {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" },

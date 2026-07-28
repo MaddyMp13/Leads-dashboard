@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 // const isLocalHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 const API_BASE = "https://mandar.xo.je/api";
+=======
+const isLocalHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+const API_BASE = isLocalHost
+    ? "http://localhost/api"
+    : "https://leadsdashboard.arkentechpublishing.com/api";
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
 
 const parseJsonResponse = async (response, fallbackMessage) => {
     const text = await response.text();
@@ -99,6 +106,7 @@ export const getTrashLeads = async () => {
 };
 
 
+<<<<<<< HEAD
 // // Permenant delete lead
 // const permanentDelete = async () => {
 //     if (!confirmId) return;
@@ -126,10 +134,14 @@ export const getTrashLeads = async () => {
 // };
 
 
+=======
+// Permenant delete lead
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
 const permanentDelete = async () => {
     if (!confirmId) return;
 
     try {
+<<<<<<< HEAD
         const res = await fetch(`${API_BASE}/leads/permanent_delete_lead.php`, {
             method: "POST",
             headers: {
@@ -143,10 +155,20 @@ const permanentDelete = async () => {
         if (!res.ok) {
             throw new Error(`HTTP ${res.status}`);
         }
+=======
+        const res = await fetch(`${API_BASE}/leads/permanent_delete_lead.php`,
+            {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: confirmId })
+            }
+        );
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
 
         const data = await res.json();
 
         if (data.success) {
+<<<<<<< HEAD
             setLeads(prev => prev.filter(lead => lead.id !== confirmId));
             setConfirmId(null);
         } else {
@@ -162,6 +184,18 @@ const permanentDelete = async () => {
 
 
 
+=======
+            setLeads(prev =>
+                prev.filter(lead => lead.id !== confirmId)
+            );
+            setConfirmId(null);
+        }
+    } catch (err) {
+        console.error("Permanent delete failed", err);
+    }
+};
+
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
 const API_user = `${API_BASE}/users`;
 /* 🔹 Get All Users */
 export const getUsers = async () => {

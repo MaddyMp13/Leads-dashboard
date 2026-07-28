@@ -11,6 +11,7 @@ const Dashboard = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
+<<<<<<< HEAD
     // const selectedDomain = new URLSearchParams(location.search).get("domain") || "";
     const [selectedDomain, setSelectedDomain] = useState(
         localStorage.getItem("selectedDomain") || ""
@@ -35,6 +36,11 @@ const Dashboard = () => {
         };
     }, []);
 
+=======
+    const selectedDomain = new URLSearchParams(location.search).get("domain") || "";
+    const itemsPerPage = 5;
+
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
     // ✅ Fetch Data
     useEffect(() => {
         const fetchData = async () => {
@@ -239,3 +245,7 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
