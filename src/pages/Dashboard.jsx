@@ -1,24 +1,76 @@
+<<<<<<< HEAD
 import { useEffect, useState } from "react";
 import { getLeads } from "../services/api";
+=======
+import React, { useEffect, useState } from "react";
+import { getLeads, getUsers } from "../services/api";
+>>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc
 import { useLocation, useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
     const [leads, setLeads] = useState([]);
+<<<<<<< HEAD
+=======
+    const [users, setUsers] = useState([]);
+>>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [search, setSearch] = useState("");
 
     const navigate = useNavigate();
     const location = useLocation();
+<<<<<<< HEAD
     const selectedDomain = new URLSearchParams(location.search).get("domain") || "";
     const itemsPerPage = 5;
 
+=======
+<<<<<<< HEAD
+    // const selectedDomain = new URLSearchParams(location.search).get("domain") || "";
+    const [selectedDomain, setSelectedDomain] = useState(
+        localStorage.getItem("selectedDomain") || ""
+    );
+    const itemsPerPage = 5;
+
+    useEffect(() => {
+        if (!location.search) return;
+
+        navigate("/dashboard", { replace: true });
+    }, [location.search, navigate]);
+
+    useEffect(() => {
+        const handleSelectedDomainChange = (event) => {
+            setSelectedDomain(event.detail || "");
+        };
+
+        window.addEventListener("selected-domain-change", handleSelectedDomainChange);
+
+        return () => {
+            window.removeEventListener("selected-domain-change", handleSelectedDomainChange);
+        };
+    }, []);
+
+=======
+    const selectedDomain = new URLSearchParams(location.search).get("domain") || "";
+    const itemsPerPage = 5;
+
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
+>>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc
     // ✅ Fetch Data
     useEffect(() => {
         const fetchData = async () => {
             try {
+<<<<<<< HEAD
                 const leadsData = await getLeads();
                 setLeads(leadsData || []);
+=======
+                const [leadsData, usersData] = await Promise.all([
+                    getLeads(),
+                    getUsers()
+                ]);
+
+                setLeads(leadsData || []);
+                setUsers(usersData || []);
+>>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc
             } catch (error) {
                 console.error("Error fetching dashboard data", error);
             } finally {
@@ -90,6 +142,7 @@ const Dashboard = () => {
     if (loading) return <p>Loading dashboard...</p>;
 
     return (
+<<<<<<< HEAD
         <div className="min-h-screen bg-gray-50 p-6 lg:p-8">
 
             {/* ================= HEADER ================= */}
@@ -520,9 +573,135 @@ const Dashboard = () => {
 
             </div>
 
+=======
+        <div className="p-6">
+            <h2 className="text-3xl font-bold mb-6">Dashboard Overview</h2>
+
+            {/* 📊 Stats Cards */}
+            <div className="flex gap-6 mb-8">
+                <div className="w-1/3 bg-pink-800 text-white p-6 rounded shadow-lg">
+                    <h4>Total Leads</h4>
+                    <p className="text-xl">{totalLeads}</p>
+                </div>
+
+                <div className="w-1/3 bg-pink-800 text-white p-6 rounded shadow-lg">
+                    <h4>Total POC Count</h4>
+                    <p className="text-xl">{totalPOC}</p>
+                </div>
+
+                <div className="w-1/3 bg-pink-800 text-white p-6 rounded shadow-lg">
+                    <h4>Domains</h4>
+                    <p className="text-xl">{uniqueDomains}</p>
+                </div>
+            </div>
+
+            {/* 📋 POC Table */}
+            <h3 className="text-xl font-semibold mb-4">
+                {selectedDomain ? `POC Names for ${selectedDomain}` : "All POC Names"}
+            </h3>
+
+            {/* 🔎 Search Box */}
+            <div className="mb-4">
+                <input
+                    type="text"
+                    placeholder="Search POC name..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="w-full md:w-1/3 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-700"
+                />
+            </div>
+
+
+            <table className="min-w-full border border-gray-300">
+                <thead className="bg-gray-100">
+                    <tr>
+                        <th className="px-4 py-2 border text-left">POC Name</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {currentPOCNames.length > 0 ? (
+                        currentPOCNames.map((name, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
+                                <td className="px-4 py-2 border">
+                                    <p
+                                        onClick={() => {
+                                            const params = new URLSearchParams();
+                                            params.set("poc", name);
+
+                                            if (selectedDomain) {
+                                                params.set("domain", selectedDomain);
+                                            }
+
+                                            navigate(`/leads?${params.toString()}`);
+                                        }}
+                                        className="cursor-pointer hover:bg-gray-200 p-2 rounded"
+                                    >
+                                        {name}
+                                    </p>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td className="px-4 py-4 text-center text-gray-500">
+                                No POC found
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+
+            {/* 🔢 Pagination */}
+            {totalPages > 1 && (
+                <div className="flex justify-center mt-6 gap-2 items-center">
+                    <button
+                        className="px-3 py-1 border rounded disabled:opacity-40"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(prev => prev - 1)}
+                    >
+                        Prev
+                    </button>
+
+                    {getPagination().map((page, idx) =>
+                        page === "..." ? (
+                            <span key={idx} className="px-2">
+                                ...
+                            </span>
+                        ) : (
+                            <button
+                                key={idx}
+                                onClick={() => setCurrentPage(page)}
+                                className={`px-3 py-1 border rounded ${currentPage === page
+                                    ? "bg-black text-white"
+                                    : ""
+                                    }`}
+                            >
+                                {page}
+                            </button>
+                        )
+                    )}
+
+                    <button
+                        className="px-3 py-1 border rounded disabled:opacity-40"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
+>>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc
         </div>
     );
 };
 
 export default Dashboard;
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> 8d86ed56903a6a1374c2d2ad6b7dd0969f4574b4
+>>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc

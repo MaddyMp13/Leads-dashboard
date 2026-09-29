@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 @import "tailwindcss";
 
+=======
+>>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc
 body {
   box-sizing: border-box;
   margin: 0;
@@ -17,4 +20,8 @@ th {
 
 td, th {
   text-align: left;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc

@@ -5,12 +5,21 @@ import { getUsers } from "../services/api";
 function Users() {
     const [users, setUsers] = useState([]);
 
+<<<<<<< HEAD
     useEffect(() => {
         const fetchUsers = async () => {
             const data = await getUsers();
             setUsers(data);
         };
 
+=======
+    const fetchUsers = async () => {
+        const data = await getUsers();
+        setUsers(data);
+    };
+
+    useEffect(() => {
+>>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc
         fetchUsers();
     }, []);
 
@@ -21,6 +30,7 @@ function Users() {
 
 
             {/* Users Table */}
+<<<<<<< HEAD
             <div className="w-full">
                 {/* Header */}
                 <div className="mb-6">
@@ -140,6 +150,26 @@ function Users() {
                     )}
                 </div>
             </div>
+=======
+            <table border="1" cellPadding="10">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>{Array.isArray(users) && users.map((user) => (
+                    <tr key={user.id}>
+                        <td>{user.name}</td>
+                        <td>{user.email}</td>
+                        <td>{user.role}</td>
+                        <td>{new Date(user.created_at).toLocaleString()}</td>
+                    </tr>
+                ))}</tbody>
+            </table>
+>>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc
         </div >
     );
 }

@@ -33,7 +33,11 @@ const Login = () => {
     };
 
     return (
+<<<<<<< HEAD
         <div className="min-h-screen flex items-center justify-center bg-gray-100" style={{ backgroundImage: "url('https://arkentechpublishing.com/Arken-Wallpaper.png')", backgroundRepeat: "no-repeat", backgroundPosition: "center", backgroundSize: "cover" }}>
+=======
+        <div className="min-h-screen flex items-center justify-center bg-gray-100" style={{ backgroundImage: "url('https://leadsdashboard.arkentechpublishing.com/Arken-Wallpaper.png')", backgroundRepeat: "no-repeat", backgroundPosition: "center", backgroundSize: "cover" }}>
+>>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc
 
             <form
                 onSubmit={handleLogin}
