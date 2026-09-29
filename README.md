@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 =======
 # POC Lead Management Dashboard
 
@@ -14,4 +12,3 @@ https://mandar.xo.je/dashboard
 **Demo Password:** `User@123`
 
 > Demo credentials are provided for testing purposes only.
->>>>>>> f1cd4945016d214eed5758c39cbb2ed6158d43fc
